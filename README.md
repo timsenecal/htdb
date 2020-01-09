@@ -12,9 +12,9 @@ php with postgresql support
 perl 
 
 optional support for gathering tv schedule via zap2xml.pl script.
-optional support for recording shows via the hdhomerun extend or duo
-optional support for watching videos or live tv (via hdhomerun) on chromecast enabled TV
-optional support for security cameras (see who is at your front door)
+optional support for recording shows via the hdhomerun extend or duo.
+optional support for watching videos or live tv (via hdhomerun) on chromecast enabled TV.
+optional support for security cameras (see who is at your front door).
 
 very rough at this stage.
 
