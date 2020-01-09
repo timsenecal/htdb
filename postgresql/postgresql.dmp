@@ -1,0 +1,1530 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 10.10 (Ubuntu 10.10-0ubuntu0.18.04.1)
+-- Dumped by pg_dump version 10.10 (Ubuntu 10.10-0ubuntu0.18.04.1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: htdb; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE htdb WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+
+CREATE USER htdb PASSWORD htdb;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO htdb;
+CREATE USER "www-data";
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "www-data";
+
+ALTER DATABASE htdb OWNER TO postgres;
+
+\connect htdb
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: alt_titles; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.alt_titles (
+    tconst character varying(20),
+    tindex integer,
+    alttitle character varying(200),
+    ttype character varying(20),
+    normaltitle character varying(250)
+);
+
+
+ALTER TABLE public.alt_titles OWNER TO htdb;
+
+--
+-- Name: device_id; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.device_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.device_id OWNER TO htdb;
+
+--
+-- Name: camera_devices; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.camera_devices (
+    deviceid character varying(40),
+    ipaddress character varying(30),
+    stream character varying(200),
+    preview character varying(200),
+    web_path character varying(200),
+    file_path character varying(200),
+    label character varying(50),
+    id integer DEFAULT nextval('public.device_id'::regclass),
+    htdb_path character varying(200)
+);
+
+
+ALTER TABLE public.camera_devices OWNER TO htdb;
+
+--
+-- Name: chromecast_devices; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.chromecast_devices (
+    id integer DEFAULT nextval('public.device_id'::regclass),
+    name character varying(100) NOT NULL,
+    ipaddress character varying(30) NOT NULL,
+    localip character varying(30),
+    vlcport character varying(10),
+    volume character varying(10),
+    mute character varying(10) DEFAULT 'no'::character varying
+);
+
+
+ALTER TABLE public.chromecast_devices OWNER TO htdb;
+
+--
+-- Name: chromecast_playing; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.chromecast_playing (
+    ipaddress character varying(20),
+    ttype character varying(20),
+    file_id integer DEFAULT 0,
+    title character varying(200),
+    episode character varying(20),
+    channelid numeric(3,1),
+    stamp timestamp without time zone DEFAULT now(),
+    filepath character varying(200),
+    filename character varying(75),
+    status character varying(20) DEFAULT 'playing'::character varying,
+    repeat character varying(20) DEFAULT 'no'::character varying,
+    loop character varying(20) DEFAULT 'no'::character varying,
+    ctime character varying(20) DEFAULT 0,
+    runtime character varying(20),
+    xmlfilename character varying(50)
+);
+
+
+ALTER TABLE public.chromecast_playing OWNER TO htdb;
+
+--
+-- Name: tv_record_id; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.tv_record_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tv_record_id OWNER TO htdb;
+
+--
+-- Name: chromecast_tune; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.chromecast_tune (
+    id numeric(16,0) DEFAULT nextval('public.tv_record_id'::regclass),
+    starttime timestamp without time zone,
+    endtime timestamp without time zone,
+    channelid numeric(3,1) DEFAULT 0.0,
+    title character varying(200),
+    episodetitle character varying(200),
+    episodenum character varying(20),
+    tunestatus character varying(20) DEFAULT 'pending'::character varying,
+    stamp timestamp without time zone DEFAULT now(),
+    runtime character varying(20),
+    episodenumdd character varying(20),
+    tuner character varying(20) DEFAULT 'any'::character varying,
+    newfilename character varying(200),
+    season integer,
+    episode integer,
+    client character varying(50),
+    calc_runtime interval
+);
+
+
+ALTER TABLE public.chromecast_tune OWNER TO htdb;
+
+--
+-- Name: client_playing; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.client_playing (
+    client character varying(50) NOT NULL,
+    ttype character varying(20) NOT NULL,
+    stamp timestamp without time zone DEFAULT now(),
+    id character varying(20) NOT NULL,
+    currenttime character varying(20)
+);
+
+
+ALTER TABLE public.client_playing OWNER TO htdb;
+
+--
+-- Name: clientid; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.clientid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.clientid OWNER TO htdb;
+
+--
+-- Name: dvd_data; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.dvd_data (
+    dvd_title character varying(50),
+    titlenum integer,
+    titlelen time without time zone,
+    titlechaps integer,
+    title_rip character varying(10) DEFAULT 'nada'::character varying
+);
+
+
+ALTER TABLE public.dvd_data OWNER TO htdb;
+
+--
+-- Name: dvd_rip_id; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.dvd_rip_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dvd_rip_id OWNER TO htdb;
+
+--
+-- Name: movieid; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.movieid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.movieid OWNER TO htdb;
+
+--
+-- Name: dvd_rips; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.dvd_rips (
+    tconst character varying(30),
+    ttype character varying(20),
+    filename character varying(250),
+    primarytitle character varying(200),
+    season integer DEFAULT 0,
+    episode integer DEFAULT 0,
+    disc integer DEFAULT 0,
+    stamp timestamp without time zone DEFAULT now(),
+    status character varying(20) DEFAULT 'ripped'::character varying,
+    id integer DEFAULT nextval('public.movieid'::regclass),
+    episodenum character varying(20),
+    epitconst character varying(30),
+    runtime time without time zone,
+    newfilename character varying(250),
+    disctitle character varying(50)
+);
+
+
+ALTER TABLE public.dvd_rips OWNER TO htdb;
+
+--
+-- Name: folder_id; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.folder_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.folder_id OWNER TO htdb;
+
+--
+-- Name: folders; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.folders (
+    folder_path character varying(250),
+    folder_type character varying(25),
+    id numeric(16,0) DEFAULT nextval('public.folder_id'::regclass),
+    web_path character varying(250)
+);
+
+
+ALTER TABLE public.folders OWNER TO htdb;
+
+--
+-- Name: hdhomerun_channels; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.hdhomerun_channels (
+    deviceid character varying(20),
+    tvchannel character varying(20),
+    channelid numeric(3,1),
+    bcastchannel integer
+);
+
+
+ALTER TABLE public.hdhomerun_channels OWNER TO htdb;
+
+--
+-- Name: hdhomerun_devices; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.hdhomerun_devices (
+    deviceid character varying(20),
+    ipaddress character varying(30),
+    tunercount integer,
+    transcode character varying(20),
+    duration character varying(20),
+    tuner_one character varying(20) DEFAULT 'off'::character varying,
+    tuner_two character varying(20) DEFAULT 'off'::character varying,
+    tuner_three character varying(20) DEFAULT 'off'::character varying,
+    tuner_four character varying(20) DEFAULT 'off'::character varying,
+    tuner_used integer
+);
+
+
+ALTER TABLE public.hdhomerun_devices OWNER TO htdb;
+
+--
+-- Name: movie_credits; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.movie_credits (
+    tconst character varying(20) NOT NULL,
+    profession character varying(50) NOT NULL,
+    nconst character varying(20) NOT NULL,
+    role character varying(200),
+    creditsnum integer
+);
+
+
+ALTER TABLE public.movie_credits OWNER TO htdb;
+
+--
+-- Name: movie_files; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.movie_files (
+    filename character varying(200),
+    filesize numeric(12,0),
+    audio character varying(200),
+    video character varying(200),
+    tconst character varying(20),
+    runtime character varying(20) DEFAULT 'nada'::character varying,
+    data_collected character varying(5) DEFAULT 'no'::character varying,
+    id integer DEFAULT nextval('public.movieid'::regclass),
+    folder_id numeric(16,0) DEFAULT 1,
+    stamp timestamp without time zone DEFAULT now(),
+    primarytitle character varying(250)
+);
+
+
+ALTER TABLE public.movie_files OWNER TO htdb;
+
+--
+-- Name: movie_info; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.movie_info (
+    tconst character varying(20),
+    description character varying(1000),
+    dims character varying(20),
+    movie_dims character varying(30),
+    id integer DEFAULT nextval('public.movieid'::regclass)
+);
+
+
+ALTER TABLE public.movie_info OWNER TO htdb;
+
+--
+-- Name: music_files; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.music_files (
+    filename character varying(200),
+    filesize numeric(12,0),
+    data_collected character varying(5) DEFAULT 'no'::character varying,
+    id integer DEFAULT nextval('public.movieid'::regclass),
+    folder_id numeric(16,0) DEFAULT 4,
+    folder character varying(200),
+    runtime integer DEFAULT 0,
+    albumtitle character varying(200),
+    songtitle character varying(200),
+    artist character varying(200),
+    date character varying(20),
+    track integer,
+    audio character varying(200),
+    poster character varying(200),
+    genre character varying(200),
+    artistid integer,
+    albumid integer,
+    stamp timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.music_files OWNER TO htdb;
+
+--
+-- Name: name_basics; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.name_basics (
+    nconst character varying(20) NOT NULL,
+    primaryname character varying(200) NOT NULL,
+    birth character varying(10),
+    death character varying(10),
+    profession character varying(50),
+    tconst character varying(20),
+    normalname character varying(200)
+);
+
+
+ALTER TABLE public.name_basics OWNER TO htdb;
+
+--
+-- Name: playlistid; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.playlistid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.playlistid OWNER TO htdb;
+
+--
+-- Name: playlist; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.playlist (
+    label character varying(50),
+    client character varying(50),
+    fileid integer DEFAULT 0,
+    ttype character varying(50),
+    channelid numeric(3,1),
+    runtime integer,
+    starttime timestamp without time zone,
+    id integer DEFAULT nextval('public.playlistid'::regclass),
+    folderid integer,
+    folder character varying(100),
+    status character varying(10) DEFAULT 'active'::character varying,
+    season integer DEFAULT 0,
+    episode integer DEFAULT 0,
+    mode character varying(20) DEFAULT 'item'::character varying,
+    tconst character varying(20)
+);
+
+
+ALTER TABLE public.playlist OWNER TO htdb;
+
+--
+-- Name: poster_info; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.poster_info (
+    tconst character varying(20),
+    width integer,
+    height integer
+);
+
+
+ALTER TABLE public.poster_info OWNER TO htdb;
+
+--
+-- Name: settings; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.settings (
+    has_tvshows character varying(5),
+    has_tvsched character varying(5),
+    has_movies character varying(5),
+    has_pics character varying(5),
+    has_music character varying(5),
+    has_maint character varying(5),
+    client character varying(50),
+    label character varying(50),
+    id integer DEFAULT nextval('public.clientid'::regclass),
+    can_edit character varying(5),
+    embed_vids character varying(5) DEFAULT 'yes'::character varying,
+    has_playlist character varying(5),
+    has_camera character varying(5),
+    has_chromecast character varying(5) DEFAULT 'yes'::character varying
+);
+
+
+ALTER TABLE public.settings OWNER TO htdb;
+
+--
+-- Name: title_basics; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.title_basics (
+    tconst character varying(20),
+    ttype character varying(20),
+    primarytitle character varying(200),
+    originaltitle character varying(200),
+    isadult character varying(5),
+    startyear character varying(10),
+    endyear character varying(10),
+    runtime character varying(10),
+    title_genres character varying(200),
+    runtime_int numeric(4,0),
+    runtime_lower numeric(4,0),
+    runtime_upper numeric(4,0),
+    normaltitle character varying(250),
+    alttitle character varying(250)
+);
+
+
+ALTER TABLE public.title_basics OWNER TO htdb;
+
+--
+-- Name: title_genre; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.title_genre (
+    tconst character varying(20),
+    genre_label character varying(50),
+    ttype character varying(20)
+);
+
+
+ALTER TABLE public.title_genre OWNER TO htdb;
+
+--
+-- Name: tv_channel_id; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.tv_channel_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tv_channel_id OWNER TO htdb;
+
+--
+-- Name: tv_channel_info; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.tv_channel_info (
+    id numeric(16,0) DEFAULT nextval('public.tv_channel_id'::regclass),
+    xmlchannelid character varying(40) NOT NULL,
+    fullname character varying(40),
+    channel character varying(20),
+    callname character varying(40),
+    icon character varying(200),
+    stamp timestamp without time zone DEFAULT now(),
+    channelid numeric(3,1),
+    active character varying(10) DEFAULT 'yes'::character varying,
+    timeoffset integer DEFAULT 15
+);
+
+
+ALTER TABLE public.tv_channel_info OWNER TO htdb;
+
+--
+-- Name: tv_episodes; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.tv_episodes (
+    showtconst character varying(20),
+    epitconst character varying(20),
+    season numeric(3,0),
+    episode numeric(3,0),
+    description character varying(2000),
+    poster character varying(200),
+    episodenum character varying(20),
+    title character varying(200),
+    id integer DEFAULT nextval('public.movieid'::regclass)
+);
+
+
+ALTER TABLE public.tv_episodes OWNER TO htdb;
+
+--
+-- Name: tv_files; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.tv_files (
+    filename character varying(200),
+    filesize numeric(12,0),
+    audio character varying(200),
+    video character varying(200),
+    tconst character varying(20) DEFAULT 'nada'::character varying,
+    data_collected character varying(5) DEFAULT 'no'::character varying,
+    id integer DEFAULT nextval('public.movieid'::regclass),
+    folder_id numeric(16,0) DEFAULT 2,
+    folder character varying(200),
+    runtime integer DEFAULT 0,
+    season integer DEFAULT 0,
+    episode integer DEFAULT 0,
+    normaltitle character varying(200),
+    primarytitle character varying(200),
+    stamp timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.tv_files OWNER TO htdb;
+
+--
+-- Name: tv_info_id; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.tv_info_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tv_info_id OWNER TO htdb;
+
+--
+-- Name: tv_info; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.tv_info (
+    id numeric(16,0) DEFAULT nextval('public.tv_info_id'::regclass),
+    starttime timestamp without time zone,
+    endtime timestamp without time zone,
+    xmlchannelid character varying(40),
+    title character varying(200),
+    episodetitle character varying(200),
+    description character varying(500),
+    length character varying(20),
+    episodenumc character varying(20),
+    episodenumdd character varying(20),
+    episodenumxml character varying(20),
+    rating character varying(20),
+    icon character varying(200),
+    repeat character varying(10),
+    stamp timestamp without time zone DEFAULT now(),
+    channelid numeric(3,1),
+    record character varying(10) DEFAULT 'no'::character varying,
+    category character varying(20),
+    date character varying(10),
+    tconst character varying(20)
+);
+
+
+ALTER TABLE public.tv_info OWNER TO htdb;
+
+--
+-- Name: tvliveid; Type: SEQUENCE; Schema: public; Owner: htdb
+--
+
+CREATE SEQUENCE public.tvliveid
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tvliveid OWNER TO htdb;
+
+--
+-- Name: tv_live; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.tv_live (
+    station character varying(30),
+    filename character varying(500),
+    stamp timestamp without time zone DEFAULT now(),
+    client character varying(50),
+    id integer DEFAULT nextval('public.tvliveid'::regclass),
+    state character varying(10) DEFAULT 'active'::character varying
+);
+
+
+ALTER TABLE public.tv_live OWNER TO htdb;
+
+--
+-- Name: tv_recording; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.tv_recording (
+    id numeric(16,0) DEFAULT nextval('public.tv_record_id'::regclass),
+    starttime timestamp without time zone,
+    endtime timestamp without time zone,
+    channelid numeric(3,1) DEFAULT 0.0,
+    title character varying(200),
+    episodetitle character varying(200),
+    episodenum character varying(20),
+    recordstatus character varying(20) DEFAULT 'pending'::character varying,
+    stamp timestamp without time zone DEFAULT now(),
+    runtime character varying(20),
+    episodenumdd character varying(20),
+    tuner character varying(20) DEFAULT 'any'::character varying,
+    newfilename character varying(200),
+    season integer,
+    episode integer,
+    tconst character varying(20)
+);
+
+
+ALTER TABLE public.tv_recording OWNER TO htdb;
+
+--
+-- Name: tv_recording_hint; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.tv_recording_hint (
+    id numeric(16,0) DEFAULT nextval('public.tv_record_id'::regclass),
+    channelid numeric(3,1),
+    title character varying(200),
+    state character varying(10) DEFAULT 'active'::character varying,
+    tconst character varying(20)
+);
+
+
+ALTER TABLE public.tv_recording_hint OWNER TO htdb;
+
+--
+-- Name: visitors; Type: TABLE; Schema: public; Owner: htdb
+--
+
+CREATE TABLE public.visitors (
+    client character varying(50),
+    stamp timestamp without time zone DEFAULT now(),
+    address character varying(20),
+    cookie_client character varying(50)
+);
+
+
+ALTER TABLE public.visitors OWNER TO htdb;
+
+--
+-- Name: chromecast_devices chromecast_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: htdb
+--
+
+ALTER TABLE ONLY public.chromecast_devices
+    ADD CONSTRAINT chromecast_devices_pkey PRIMARY KEY (name, ipaddress);
+
+
+--
+-- Name: client_playing client_playing_pkey; Type: CONSTRAINT; Schema: public; Owner: htdb
+--
+
+ALTER TABLE ONLY public.client_playing
+    ADD CONSTRAINT client_playing_pkey PRIMARY KEY (client, ttype, id);
+
+
+--
+-- Name: movie_credits movie_credits_pkey; Type: CONSTRAINT; Schema: public; Owner: htdb
+--
+
+ALTER TABLE ONLY public.movie_credits
+    ADD CONSTRAINT movie_credits_pkey PRIMARY KEY (tconst, nconst, profession);
+
+
+--
+-- Name: name_basics name_basics_pkey; Type: CONSTRAINT; Schema: public; Owner: htdb
+--
+
+ALTER TABLE ONLY public.name_basics
+    ADD CONSTRAINT name_basics_pkey PRIMARY KEY (nconst, primaryname);
+
+
+--
+-- Name: tv_channel_info xmlchannelconstraint; Type: CONSTRAINT; Schema: public; Owner: htdb
+--
+
+ALTER TABLE ONLY public.tv_channel_info
+    ADD CONSTRAINT xmlchannelconstraint UNIQUE (xmlchannelid);
+
+
+--
+-- Name: alt_titles_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX alt_titles_idx1 ON public.alt_titles USING btree (tconst);
+
+
+--
+-- Name: alt_titles_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX alt_titles_idx2 ON public.alt_titles USING btree (tconst, tindex);
+
+
+--
+-- Name: alt_titles_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX alt_titles_idx3 ON public.alt_titles USING btree (alttitle);
+
+
+--
+-- Name: alt_titles_idx4; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX alt_titles_idx4 ON public.alt_titles USING btree (normaltitle);
+
+
+--
+-- Name: chromecast_devices_idx; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX chromecast_devices_idx ON public.chromecast_devices USING btree (id);
+
+
+--
+-- Name: chromecast_devices_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX chromecast_devices_idx2 ON public.chromecast_devices USING btree (name);
+
+
+--
+-- Name: chromecast_playing_idx; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX chromecast_playing_idx ON public.chromecast_playing USING btree (ipaddress);
+
+
+--
+-- Name: client_playing_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX client_playing_idx1 ON public.client_playing USING btree (client, stamp);
+
+
+--
+-- Name: client_playing_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX client_playing_idx2 ON public.client_playing USING btree (client, ttype, id);
+
+
+--
+-- Name: dvd_data_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX dvd_data_idx1 ON public.dvd_data USING btree (dvd_title);
+
+
+--
+-- Name: movie_credits_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX movie_credits_idx1 ON public.movie_credits USING btree (tconst, nconst);
+
+
+--
+-- Name: movie_files_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX movie_files_idx1 ON public.movie_files USING btree (filename);
+
+
+--
+-- Name: movie_files_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX movie_files_idx2 ON public.movie_files USING btree (tconst);
+
+
+--
+-- Name: movie_files_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX movie_files_idx3 ON public.movie_files USING btree (data_collected, tconst);
+
+
+--
+-- Name: movie_files_idx5; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX movie_files_idx5 ON public.movie_files USING btree (id);
+
+
+--
+-- Name: movie_files_idx6; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX movie_files_idx6 ON public.movie_files USING btree (stamp);
+
+
+--
+-- Name: movie_info_idx; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX movie_info_idx ON public.movie_info USING btree (tconst);
+
+
+--
+-- Name: music_files_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx1 ON public.music_files USING btree (id);
+
+
+--
+-- Name: music_files_idx10; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx10 ON public.music_files USING btree (artist, artistid);
+
+
+--
+-- Name: music_files_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx2 ON public.music_files USING btree (artist);
+
+
+--
+-- Name: music_files_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx3 ON public.music_files USING btree (artist, albumtitle);
+
+
+--
+-- Name: music_files_idx4; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx4 ON public.music_files USING btree (artist, albumtitle, songtitle);
+
+
+--
+-- Name: music_files_idx5; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx5 ON public.music_files USING btree (artist, albumtitle, songtitle, track);
+
+
+--
+-- Name: music_files_idx6; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx6 ON public.music_files USING btree (date);
+
+
+--
+-- Name: music_files_idx7; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx7 ON public.music_files USING btree (genre);
+
+
+--
+-- Name: music_files_idx8; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx8 ON public.music_files USING btree (artist, genre);
+
+
+--
+-- Name: music_files_idx9; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX music_files_idx9 ON public.music_files USING btree (artist, albumtitle, songtitle, track, date);
+
+
+--
+-- Name: name_basics_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX name_basics_idx1 ON public.name_basics USING btree (nconst);
+
+
+--
+-- Name: name_basics_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX name_basics_idx2 ON public.name_basics USING btree (primaryname);
+
+
+--
+-- Name: name_basics_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX name_basics_idx3 ON public.name_basics USING btree (tconst);
+
+
+--
+-- Name: name_basics_idx4; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX name_basics_idx4 ON public.name_basics USING btree (normalname);
+
+
+--
+-- Name: settings_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX settings_idx1 ON public.settings USING btree (client);
+
+
+--
+-- Name: settings_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX settings_idx2 ON public.settings USING btree (label);
+
+
+--
+-- Name: settings_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX settings_idx3 ON public.settings USING btree (client, label);
+
+
+--
+-- Name: title_basics_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_basics_idx1 ON public.title_basics USING btree (tconst);
+
+
+--
+-- Name: title_basics_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_basics_idx2 ON public.title_basics USING btree (primarytitle);
+
+
+--
+-- Name: title_basics_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_basics_idx3 ON public.title_basics USING btree (ttype);
+
+
+--
+-- Name: title_basics_idx4; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_basics_idx4 ON public.title_basics USING btree (primarytitle, ttype);
+
+
+--
+-- Name: title_basics_idx5; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_basics_idx5 ON public.title_basics USING btree (normaltitle, ttype);
+
+
+--
+-- Name: title_basics_idx6; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_basics_idx6 ON public.title_basics USING btree (normaltitle);
+
+
+--
+-- Name: title_genre_idx; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_genre_idx ON public.title_genre USING btree (tconst);
+
+
+--
+-- Name: title_genre_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_genre_idx2 ON public.title_genre USING btree (tconst, ttype);
+
+
+--
+-- Name: title_genre_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX title_genre_idx3 ON public.title_genre USING btree (genre_label, ttype);
+
+
+--
+-- Name: tv_channel_info_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_channel_info_idx1 ON public.tv_channel_info USING btree (channelid);
+
+
+--
+-- Name: tv_episodes_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_episodes_idx1 ON public.tv_episodes USING btree (showtconst);
+
+
+--
+-- Name: tv_episodes_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_episodes_idx2 ON public.tv_episodes USING btree (epitconst);
+
+
+--
+-- Name: tv_episodes_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_episodes_idx3 ON public.tv_episodes USING btree (showtconst, epitconst);
+
+
+--
+-- Name: tv_episodes_idx4; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_episodes_idx4 ON public.tv_episodes USING btree (showtconst, season, episode);
+
+
+--
+-- Name: tv_episodes_idx5; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_episodes_idx5 ON public.tv_episodes USING btree (showtconst, episodenum);
+
+
+--
+-- Name: tv_files_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_files_idx1 ON public.tv_files USING btree (tconst, season);
+
+
+--
+-- Name: tv_files_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_files_idx2 ON public.tv_files USING btree (tconst, season, episode);
+
+
+--
+-- Name: tv_files_idx3; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_files_idx3 ON public.tv_files USING btree (tconst, primarytitle);
+
+
+--
+-- Name: tv_files_idx4; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_files_idx4 ON public.tv_files USING btree (primarytitle);
+
+
+--
+-- Name: tv_files_idx5; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_files_idx5 ON public.tv_files USING btree (id);
+
+
+--
+-- Name: tv_files_idx6; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_files_idx6 ON public.tv_files USING btree (stamp);
+
+
+--
+-- Name: tv_info_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_info_idx1 ON public.tv_info USING btree (channelid, endtime, starttime);
+
+
+--
+-- Name: tv_live_idx1; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_live_idx1 ON public.tv_live USING btree (station);
+
+
+--
+-- Name: tv_live_idx2; Type: INDEX; Schema: public; Owner: htdb
+--
+
+CREATE INDEX tv_live_idx2 ON public.tv_live USING btree (filename);
+
+
+--
+-- Name: TABLE alt_titles; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.alt_titles TO htdb;
+GRANT ALL ON TABLE public.alt_titles TO "www-data";
+
+
+--
+-- Name: SEQUENCE device_id; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.device_id TO htdb;
+GRANT ALL ON SEQUENCE public.device_id TO "www-data";
+
+
+--
+-- Name: TABLE camera_devices; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.camera_devices TO htdb;
+GRANT ALL ON TABLE public.camera_devices TO "www-data";
+
+
+--
+-- Name: TABLE chromecast_devices; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.chromecast_devices TO htdb;
+GRANT ALL ON TABLE public.chromecast_devices TO "www-data";
+
+
+--
+-- Name: TABLE chromecast_playing; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.chromecast_playing TO htdb;
+GRANT ALL ON TABLE public.chromecast_playing TO "www-data";
+
+
+--
+-- Name: SEQUENCE tv_record_id; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.tv_record_id TO htdb;
+GRANT ALL ON SEQUENCE public.tv_record_id TO "www-data";
+
+
+--
+-- Name: TABLE chromecast_tune; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.chromecast_tune TO htdb;
+GRANT ALL ON TABLE public.chromecast_tune TO "www-data";
+
+
+--
+-- Name: TABLE client_playing; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.client_playing TO htdb;
+GRANT ALL ON TABLE public.client_playing TO "www-data";
+
+
+--
+-- Name: SEQUENCE clientid; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.clientid TO htdb;
+GRANT ALL ON SEQUENCE public.clientid TO "www-data";
+
+
+--
+-- Name: TABLE dvd_data; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.dvd_data TO htdb;
+GRANT ALL ON TABLE public.dvd_data TO "www-data";
+
+
+--
+-- Name: SEQUENCE dvd_rip_id; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.dvd_rip_id TO htdb;
+GRANT ALL ON SEQUENCE public.dvd_rip_id TO "www-data";
+
+
+--
+-- Name: SEQUENCE movieid; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.movieid TO htdb;
+GRANT ALL ON SEQUENCE public.movieid TO "www-data";
+
+
+--
+-- Name: TABLE dvd_rips; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.dvd_rips TO htdb;
+GRANT ALL ON TABLE public.dvd_rips TO "www-data";
+
+
+--
+-- Name: SEQUENCE folder_id; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.folder_id TO htdb;
+GRANT ALL ON SEQUENCE public.folder_id TO "www-data";
+
+
+--
+-- Name: TABLE folders; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.folders TO htdb;
+GRANT ALL ON TABLE public.folders TO "www-data";
+
+
+--
+-- Name: TABLE hdhomerun_channels; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.hdhomerun_channels TO htdb;
+GRANT ALL ON TABLE public.hdhomerun_channels TO "www-data";
+
+
+--
+-- Name: TABLE hdhomerun_devices; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.hdhomerun_devices TO htdb;
+GRANT ALL ON TABLE public.hdhomerun_devices TO "www-data";
+
+
+--
+-- Name: TABLE movie_credits; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.movie_credits TO htdb;
+GRANT ALL ON TABLE public.movie_credits TO "www-data";
+
+
+--
+-- Name: TABLE movie_files; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.movie_files TO htdb;
+GRANT ALL ON TABLE public.movie_files TO "www-data";
+
+
+--
+-- Name: TABLE movie_info; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.movie_info TO htdb;
+GRANT ALL ON TABLE public.movie_info TO "www-data";
+
+
+--
+-- Name: TABLE music_files; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.music_files TO htdb;
+GRANT ALL ON TABLE public.music_files TO "www-data";
+
+
+--
+-- Name: TABLE name_basics; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.name_basics TO htdb;
+GRANT ALL ON TABLE public.name_basics TO "www-data";
+
+
+--
+-- Name: SEQUENCE playlistid; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.playlistid TO htdb;
+GRANT ALL ON SEQUENCE public.playlistid TO "www-data";
+
+
+--
+-- Name: TABLE playlist; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.playlist TO htdb;
+GRANT ALL ON TABLE public.playlist TO "www-data";
+
+
+--
+-- Name: TABLE poster_info; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.poster_info TO htdb;
+GRANT ALL ON TABLE public.poster_info TO "www-data";
+
+
+--
+-- Name: TABLE settings; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.settings TO htdb;
+GRANT ALL ON TABLE public.settings TO "www-data";
+
+
+--
+-- Name: TABLE title_basics; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.title_basics TO htdb;
+GRANT ALL ON TABLE public.title_basics TO "www-data";
+
+
+--
+-- Name: TABLE title_genre; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.title_genre TO htdb;
+GRANT ALL ON TABLE public.title_genre TO "www-data";
+
+
+--
+-- Name: SEQUENCE tv_channel_id; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.tv_channel_id TO htdb;
+GRANT ALL ON SEQUENCE public.tv_channel_id TO "www-data";
+
+
+--
+-- Name: TABLE tv_channel_info; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.tv_channel_info TO htdb;
+GRANT ALL ON TABLE public.tv_channel_info TO "www-data";
+
+
+--
+-- Name: TABLE tv_episodes; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.tv_episodes TO htdb;
+GRANT ALL ON TABLE public.tv_episodes TO "www-data";
+
+
+--
+-- Name: TABLE tv_files; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.tv_files TO htdb;
+GRANT ALL ON TABLE public.tv_files TO "www-data";
+
+
+--
+-- Name: SEQUENCE tv_info_id; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.tv_info_id TO htdb;
+GRANT ALL ON SEQUENCE public.tv_info_id TO "www-data";
+
+
+--
+-- Name: TABLE tv_info; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.tv_info TO htdb;
+GRANT ALL ON TABLE public.tv_info TO "www-data";
+
+
+--
+-- Name: SEQUENCE tvliveid; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON SEQUENCE public.tvliveid TO htdb;
+GRANT ALL ON SEQUENCE public.tvliveid TO "www-data";
+
+
+--
+-- Name: TABLE tv_live; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.tv_live TO htdb;
+GRANT ALL ON TABLE public.tv_live TO "www-data";
+
+
+--
+-- Name: TABLE tv_recording; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.tv_recording TO htdb;
+GRANT ALL ON TABLE public.tv_recording TO "www-data";
+
+
+--
+-- Name: TABLE tv_recording_hint; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.tv_recording_hint TO htdb;
+GRANT ALL ON TABLE public.tv_recording_hint TO "www-data";
+
+
+--
+-- Name: TABLE visitors; Type: ACL; Schema: public; Owner: htdb
+--
+
+GRANT ALL ON TABLE public.visitors TO htdb;
+GRANT ALL ON TABLE public.visitors TO "www-data";
+
+
+--
+-- PostgreSQL database dump complete
+--
+
