@@ -196,6 +196,11 @@ if len(query) > 0:
 		file_path = string.replace(file_path, "&", "&amp;")
 		file_path = string.replace(file_path, " ", "%20")
 		
+		print title
+		title = string.replace(title, "'", "''")
+		print title
+#		sys.exit(0)
+		
 		check_cmd = "/bin/ps -ewf | /bin/grep vlc"
 		print check_cmd
 		device_dump = commands.getoutput(check_cmd)

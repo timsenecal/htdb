@@ -155,10 +155,16 @@ for ($row = 0; $row < $rows; $row++ ){
 		print "<!-- geometrya = '$geometrya', geometryb = '$geometryb', height='$height', width='$width', calc = '$calc' -->\n";
 
 		$geometry = "width=95%";
+		
+		
 		if ($width <= ($height*1.45)) {
 			$geometry = "width=60%";
 		} else {
 			$geometry = "width=95%";
+		}
+		
+		if (strpos($video , "DAR 4:3]" ) > 0 ) {
+			$geometry = "width=60%";
 		}
 	}
 }
@@ -168,7 +174,7 @@ $fullpath = "$movie_path$filename";
 $fullpath = str_replace(" ", "%20", $fullpath);
 $fullpath = str_replace(";", "%3B", $fullpath);
 
-print "<!-- fullpath = '$fullpath', tconst = '$tconst', mtype = '$mtype' -->\n";
+print "<!-- fullpath = 'http://$server$fullpath', tconst = '$tconst', mtype = '$mtype' -->\n";
 
 if ($use_geometry == "no") {
 	$geometry = "";
@@ -211,13 +217,11 @@ if ($currenttime > 0) {
 //$geometry = "";
 //print "<p>&nbsp;</p>\n";
 //print "<p></p>\n";
-print "<div class=\"container\">\n";
+print "<div class=\"container\" allowfullscreen >\n";
 //print "<table width=100% >\n";
 //print "	<tr>\n";
 //print "		<td valign=center align=center>\n";
-print "			<video  id=\"htdbVideo\" controls $geometry preload=\"auto\" autoplay alt-text=\"$title\">\n";
-print "				<source src=\"http://$server"."$fullpath\" type=\"video/$mtype\">\n";
-print "			</video>\n";
+print "			<video id=\"htdbVideo\" controls $geometry preload=\"auto\" autoplay alt-text=\"$title\" src=\"http://$server"."$fullpath\" type=\"video/$mtype\" allowfullscreen ></video>\n";
 //print "		</td>\n";
 //print "	</tr>\n";
 //print "</table>\n";

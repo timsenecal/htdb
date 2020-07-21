@@ -52,6 +52,43 @@ if (strlen($caststation) > 0) {
 
 $htdb_conn = pg_connect ("host=localhost dbname=htdb user=htdb password=htdb");
 
+$query = "select has_tvshows, has_tvsched, has_movies, has_music, embed_vids, has_chromecast from settings where client = '$client';";
+if (strlen($cookie_client) > 0) {
+	$query = "select has_tvshows, has_tvsched, has_movies, has_music, embed_vids, has_chromecast from settings where label = '$cookie_client';";
+}
+
+print "<!-- query = '$query' -->\n";
+
+$result = pg_query($htdb_conn, $query);
+
+$rows = pg_num_rows($result);
+
+if ($rows == 0) {
+	$query = "select has_tvshows, has_tvsched, has_movies, has_pics, has_music, embed_vids from settings where client = 'all';";
+	print "<!-- query = '$query' -->\n";
+	$result = pg_query($htdb_conn, $query);
+	$rows = pg_num_rows($result);
+}
+
+for ($row = 0; $row < $rows; $row++ ){
+	$record = pg_fetch_row($result, $row);
+	
+	$has_tvshows = $record[0];
+	$has_sched = $record[1];
+	$has_movies = $record[2];
+	$has_music = $record[3];
+	$embed_vids = $record[4];
+	$has_chromecast = $record[5];
+}
+
+print "<!-- embed vids = '$embed_vids' -->\n";
+
+if ($embed_vids == "yes") {
+	$link_xmltarget = "target=\"_parent\"";
+} else {
+	$link_xmltarget = "target=\"_blank\" ";
+}
+
 $query = "select fullname, channelid, icon, callname from tv_channel_info where active = 'yes' order by channelid;";
 
 print "<!-- query = '$query' -->\n";
@@ -85,13 +122,13 @@ for ($row = 0; $row < $rows; $row++ ){
 	$line2 = $top+22;
 	$line3 = $top+25;
 	$line4 = ($top+48)-$icon_size;
-	print "<g class=\"st\">\n";
-	print "<a xlink:type=\"simple\" xlink:href=\"http://$server/htdb/htdbtvlive.php?station=$channelid\" $link_xmltarget>\n";
+	print "<g class=\"st\" cursor=\"auto\">\n";
+	print "<a xlink:type=\"simple\" xlink:href=\"http://$server/htdb/htdbtvlive.php?station=$channelid\" $link_xmltarget cursor=\"pointer\">\n";
 	print "<rect x=\"0\" y=\"$line1\" width=\"150\" height=\"50\" style=\"fill:white;stroke:black;stroke-width:2;opacity:1.0\" />\n";
 	print "<text x=\"6\" y=\"$line2\" style=\"font-family: sans-serif; font-weight: bold; font-style: bold\" fill=\"Black\" >$fullname</text>\n";
 	print "<image xlink:href=\"$icon_url\" x=\"0\" y=\"$line3\" height=\"25px\" width=\"50px\"/>\n";
 	print "</a>\n";
-	print "<a xlink:type=\"simple\" xlink:href=\"http://$server/htdb/htdbtvschedchannels.php?caststation=$channelid\" >\n";
+	print "<a xlink:type=\"simple\" xlink:href=\"http://$server/htdb/htdbtvschedchannels.php?caststation=$channelid\" cursor=\"pointer\">\n";
 	print "<image xlink:href=\"$stream_url\" x=\"120\" y=\"$line4\" height=\"$icon_size"."px\" width=\"$icon_size"."px\"/>\n";
 	print "</a>\n";
 	print "</g>\n";

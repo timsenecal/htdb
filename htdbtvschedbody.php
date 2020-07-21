@@ -141,8 +141,8 @@ for ($row = 0; $row < $rows; $row++ ){
 		$line2 = $top+22;
 		$line3 = $top+42;
 
-		print "<g class=\"show\">\n";
-		print "<a xlink:type=\"simple\" xlink:href=\"http://$server/htdb/htdbtvshowinfo.php?tvshow=$showID\" xlink:show=\"new\">\n";
+		print "<g class=\"show\" cursor=\"auto\">\n";
+		print "<a xlink:type=\"simple\" xlink:href=\"http://$server/htdb/htdbtvshowinfo.php?tvshow=$showID\" xlink:show=\"new\" cursor=\"pointer\">\n";
 		print "<rect x=\"$start1\" y=\"$line1\" width=\"$width\" height=\"50\" style=\"fill:$box_fill;stroke:black;stroke-width:2;opacity:1.0\" />\n";
 		
 		print "<text x=\"$start2\" y=\"$line2\" style=\"font-family: sans-serif; font-weight: bold; font-style: bold\" fill=\"Black\" >$title</text>\n";

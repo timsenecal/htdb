@@ -192,6 +192,7 @@ if (strlen($id) > 0) {
 						}
 
 						$query_data = "select movie_dims from movie_info where tconst = '$tconst';";
+						print "<!-- query = '$query_data' -->\n";
 						$result_data = pg_query($htdb_conn, $query_data);
 						$record_data = pg_fetch_row($result_data, 0);
 						$movie_dims = $record_data[0];

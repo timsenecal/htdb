@@ -67,11 +67,6 @@ $result = pg_query($htdb_conn, $query);
 $record = pg_fetch_row($result, 0);
 $id = $record[0];
 
-$query = "insert into tv_live (station, filename, id) values ('$station', '$file_path', '$id');";
-$result = pg_query($htdb_conn, $query);
-
-pg_close($htdb_conn);
-
 $old_file = "/var/www/html/htdb/htdbtvlive_template.template";
 $myfile = fopen($old_file, "r");
 $buffer = fread($myfile, filesize($old_file));
@@ -91,11 +86,17 @@ $myfile = fopen($new_file, "w");
 fwrite($myfile,$buffer);
 fclose($myfile);
 
+$query = "insert into tv_live (station, filename, htmlfilename, id) values ('$station', '$file_path', '$new_file', '$id');";
+print "<!-- tv_live query '$query' -->\n";
+$result = pg_query($htdb_conn, $query);
+
 if (strlen($cookie_client) > 0) {
 	$query = "insert into client_playing (client, ttype, id) values ('$cookie_client', 'tvchannel', '$station');";
-	print "<!-- query '$query' -->\n";
+	print "<!-- client_playing query '$query' -->\n";
 	$result = pg_query($htdb_conn, $query);
 }
+
+pg_close($htdb_conn);
 
 $header_url = "http://$server/htdb/htdb-tvlive/htdbtvlive_$station".".html";
 

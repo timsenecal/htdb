@@ -55,9 +55,9 @@
 <script>
 function getCurTime() {
 	var vid = document.getElementById('video');
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', 'http://<server>/htdb/htdbkilltv.php?id=<id>', false);
-	xmlhttp.send();
+	var url = "http://<server>/htdb/htdbkilltv.php";
+	var data = "id=<id>";
+	var status = navigator.sendBeacon(url, data);
 }
 </script>
 <script>
@@ -65,6 +65,9 @@ function getCurTime() {
 </script>
 <script>
 	window.onbeforeunload=function (){getCurTime();};
+</script>
+<script>
+	window.onunload=function (){getCurTime();};
 </script>
 </body>
 </html>

@@ -84,7 +84,7 @@ if (strlen($delete_hint) > 0) {
 
 $delete_item = $_REQUEST['deleteItem'];
 if (strlen($delete_item) > 0) {
-	$query = "update dvd_data set title_rip = 'delete' where titlenum = $delete_item;";
+	$query = "update dvd_data set title_rip = 'delete' where id = $delete_item;";
 	print "<!-- delete hint = '$query' -->\n";
 	$result = pg_query($htdb_conn, $query);
 }
@@ -229,7 +229,7 @@ function build_epi_popup($name, $value) {
 }
 
 $ripping = "no";
-$rip_cmd = "/bin/ps -efw | /bin/grep \"HandBrakeCLI --no-dvdnav -i '/media/\"";
+$rip_cmd = "/bin/ps -efw | /bin/grep \" --subtitle-lang-list English --all-subtitles --no-dvdnav -i '/dev/\"";
 $buffer = `$rip_cmd`;
 list($buffone, $bufftwo, $buffthree) = explode("\n", $buffer);
 $bone = strlen($buffone);
@@ -293,12 +293,13 @@ if ($ripping == "no") {
 		print "</form>\n";
 		$buffer = str_replace("<", "&lt;", $buffer);
 		$buffer = str_replace(">", "&gt;", $buffer);
+		$buffer = str_replace("\n", "<br>", $buffer);
 		print "<p>$buffer</p>\n";
 		print "<p>&nbsp;</p>\n";
 	}
 }
 
-$query = "select distinct dvd_title, titlenum, titlelen, title_rip from dvd_data where title_rip != 'delete' order by titlenum;";
+$query = "select distinct dvd_title, titlenum, titlelen, title_rip, id from dvd_data where title_rip != 'delete' order by dvd_title, titlenum;";
 print "<!-- query = '$query' -->\n";
 $result = pg_query($htdb_conn, $query);
 $rows = pg_num_rows($result);
@@ -321,6 +322,7 @@ if ($rows > 0) {
 		$title_num = $record[1];
 		$title_len = $record[2];
 		$title_rip = $record[3];
+		$title_id = $record[4];
 		
 		$accenton = "";
 		$accentoff = "";
@@ -331,7 +333,7 @@ if ($rows > 0) {
 		$button = "";
 		if ($ripping == "no") {
 //			$button = "<td><input type=\"button\" onclick=\"javascript:selectItem('$title_num');\" name=\"selectit\" value=\"Delete\">";
-			$button = "<a href=\"http://$server/htdb/htdbmaintenance.php?deleteItem=$title_num\"><image src=\"http://$server/htdb/trashcan.png\" width=\"$icon_size\" height=\"$icon_size\" alt=\"Delete\"></a>";
+			$button = "<a href=\"http://$server/htdb/htdbmaintenance.php?deleteItem=$title_id\"><image src=\"http://$server/htdb/trashcan.png\" width=\"$icon_size\" height=\"$icon_size\" alt=\"Delete\"></a>";
 		}
 		print "<tr><td>$accenton$dvd_title$accentoff</td><td>$accenton$title_num$accentoff</td><td>$accenton$title_len$accentoff</td><td align=\"right\">$button</td></tr>\n";
 
@@ -353,8 +355,8 @@ for ($row = 0; $row < $rows; $row++ ) {
 	$dvd_web_path = $record[0];
 }
 
-//$query = "select filename, primarytitle, season, episode, disc, status, id, runtime from dvd_rips where status = 'ripped' order by primarytitle, season, disc, episode;";
-$query = "select filename, primarytitle, season, episode, disc, status, id, runtime from dvd_rips where (status = 'ripped' or status = 'move') order by primarytitle, season, disc, episode;";
+$query = "select filename, primarytitle, season, episode, disc, status, id, runtime, tconst from dvd_rips where (status = 'ripped' or status = 'move') order by primarytitle, season, disc, episode;";
+//$query = "select filename, primarytitle, season, episode, disc, status, id, runtime, tconst from dvd_rips where status = 'loaded' order by primarytitle, season, disc, episode;";
 print "<!-- query = '$query' -->\n";
 $result = pg_query($htdb_conn, $query);
 $rows = pg_num_rows($result);
@@ -370,7 +372,7 @@ if ($rows > 0) {
 	print "<!-- rows = '$rows' -->\n";
 	for ($row = 0; $row < $rows; $row++ ) {
 		$record = pg_fetch_row($result, $row);
-
+		
 		$dvd_filename = $record[0];
 		$dvd_title = $record[1];
 		$dvd_season = $record[2];
@@ -379,13 +381,33 @@ if ($rows > 0) {
 		$dvd_status = $record[5];
 		$dvd_id = $record[6];
 		$runtime = $record[7];
-
+		$tconst = $record[8];
+		
 		$epi_popup = build_epi_popup($dvd_id, $dvd_episode);
 		$seas_popup = build_seas_popup($dvd_id, $dvd_episode);
 		
+		$link_url = $dvd_title;
+		
+		$make_link = "no";
+		print "<!-- title = '$dvd_title', tconst = '$tconst' -->\n";
+		if($dvd_title == "nada") {
+			$make_link = "yes";
+		}
+		if($tconst == "nada") {
+			$make_link = "yes";
+		}
+		
+		if ($make_link == "yes") {
+			$imdb_title = str_replace("_", "+", $dvd_title);
+			$imdb_title = str_replace(" ", "+", $imdb_title);
+			$imdb_title = str_replace("-", "+", $imdb_title);
+#			$link_url = "<a href=\"https://www.imdb.com/find?q=$imdb_title\" target=\"_blank\">$dvd_title</a>";
+			$link_url = "<a href=\"http://$server/htdb/htdbvideoinfo.php?edit=yes&dvd=$dvd_id\" target=\"_blank\">$dvd_title</a>";
+		}
+		
 		$trashurl = "<a href=\"http://$server/htdb/htdbmaintenance.php?deleteRip=$dvd_id\"><image src=\"http://$server/htdb/trashcan.png\" width=\"$icon_size\" height=\"$icon_size\" alt=\"Delete\"></a>";
 //		print "<tr><td>$dvd_title</td><td><a href=\"http://$server$dvd_web_path$dvd_filename\" target=\"_blank\">$dvd_filename</a></td><td>$runtime</td><td>$dvd_season&nbsp;$seas_popup</td><td>$dvd_episode&nbsp;$epi_popup</td><td><input type=\"button\" onclick=\"javascript:deleteItem('$dvd_id');\" name=\"deleteit\" value=\"Delete\"></td></tr>\n";
-		print "<tr><td>$dvd_title</td><td><a href=\"http://$server$dvd_web_path$dvd_filename\" target=\"_blank\">$dvd_filename</a></td><td>$runtime</td><td>$dvd_season&nbsp;$seas_popup</td><td>$dvd_episode&nbsp;$epi_popup</td><td>$trashurl</td></tr>\n";
+		print "<tr><td>$link_url</td><td><a href=\"http://$server$dvd_web_path$dvd_filename\" target=\"_blank\">$dvd_filename</a></td><td>$runtime</td><td>$dvd_season&nbsp;$seas_popup</td><td>$dvd_episode&nbsp;$epi_popup</td><td>$trashurl</td></tr>\n";
 	}
 	print "</table>\n";
 	
@@ -438,8 +460,8 @@ if ($rows > 0) {
 }
 
 
-$query = "select title, channelid, id from tv_recording_hint where state = 'active' order by title;";
-
+$query = "select title, channelid, id, tconst from tv_recording_hint where state = 'active' order by title;";
+print "<!-- query = '$query' -->\n";
 $result = pg_query($htdb_conn, $query);
 $rows = pg_num_rows($result);
 

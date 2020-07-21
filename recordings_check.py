@@ -142,11 +142,14 @@ for record in result_list:
 			os.system(folder_cmd)
 			
 			#make season directory
-			folder_cmd = "/bin/mkdir '"+folder_path+foldertitle+season+"'"
+			folder_cmd = "/bin/mkdir '"+folder_path+foldertitle+"/"+season+"'"
 			print folder_cmd
 			os.system(folder_cmd)
 		else:
 			filename = title
+			
+			
+		filename = string.replace(filename, "&amp;", "&")
 		
 		device_option = ""
 		query = "select deviceid from hdhomerun_channels where tvchannel = '"+channelid+"' order by deviceid;"

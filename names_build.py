@@ -98,7 +98,9 @@ def run_file(filename):
 				try:
 					htdb_db.query(query_movie)
 				except:
+					print "movie credits insert failed"
 					pass
+		
 		if string.find(line, "<td class=\"character\">") > 0:
 			#remember, name_row is the row following the current 'line' from array
 			character = name_lines[name_row]
@@ -110,6 +112,30 @@ def run_file(filename):
 			character = string.replace(character, "</a>", "")
 			character = string.strip(character)
 			character = string.replace(character, "'", "''")
+			
+			# check for a character name that is just one of many
+			if string.find(character, "/") > 0 :
+				temp = name_lines[name_row+1]
+				offset = string.find(temp, ">")
+				if offset > 0:
+					temp = temp[offset+1:]
+				temp = string.replace(temp, "</a>", "")
+				temp = string.strip(temp)
+				temp = string.replace(temp, "'", "''")
+				if len(temp) > 0:
+					character = character+" "+temp
+					# check if additional name is not the only name to add
+					if string.find(temp, "/") > 0 :
+						temp = name_lines[name_row+2]
+						offset = string.find(temp, ">")
+						if offset > 0:
+							temp = temp[offset+1:]
+						temp = string.replace(temp, "</a>", "")
+						temp = string.strip(temp)
+						temp = string.replace(temp, "'", "''")
+						if len(temp) > 0:
+							character = character+" "+temp
+			
 			print "found character: '"+nconst+"', '"+name+"', '"+normalname+"', '"+profession+"', '"+character+"'"
 			
 			query_movie = "update movie_credits set role = '"+character+"' where tconst = '"+tconst+"' and nconst = '"+nconst+"' and profession = '"+profession+"';"
@@ -149,7 +175,9 @@ if string.find(clean, "2021-") > 0:
 	query = "select distinct tconst, primarytitle from movie_files where stamp > '"+clean+"';"
 if string.find(clean, "2022-") > 0:
 	query = "select distinct tconst, primarytitle from movie_files where stamp > '"+clean+"';"
-	
+if string.find(clean, "tt") == 0:
+	query = "select distinct tconst, primarytitle from movie_files where tconst = '"+clean+"';"
+
 print query
 result = htdb_db.query(query)
 result_list = list(result.dictresult())

@@ -5,7 +5,17 @@
 
 $id = $_REQUEST['id'];
 
-$kill_command = "/var/www/html/htdb/kill_live_tv.py $id";
+if (strlen($id) <= 0) {
+	$request_body = file_get_contents('php://input');
+	
+	$parts = explode("&",$request_body);
+	
+	$id = $parts[0];
+	$id = str_replace("id=", "", $id);
+}
+
+
+$kill_command = "/var/www/html/htdb/kill_live_tv.py $id > /var/www/html/htdb/kill_cmd.log";
 $output = shell_exec($kill_command);
 print "<!-- output = '$output' -->\n";
 ?>
