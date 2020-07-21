@@ -11,7 +11,7 @@ apache 2.4.29,
 php with postgresql support,
 perl 
 
-for using this to view media files on a chromecast, it uses vlc, and to get status information and to discover available chromecast devices, it uses the following github code: 
+for using this to view media files on a chromecast, it uses vlc, and to get status information and to discover available chromecast devices, it uses the following github code: https://github.com/barnybug/go-cast
 
 optional support for gathering tv schedule via zap2xml.pl script.
 optional support for recording shows via the hdhomerun extend or duo.
