@@ -5,10 +5,10 @@ basic requirements/as tested:
 
 ubuntu 18.04 on an intel nuc
 
-postgresql 10.10
-python 2.7.x with postgresql support
-apache 2.4.29
-php with postgresql support
+postgresql 10.10,
+python 2.7.x with postgresql support,
+apache 2.4.29,
+php with postgresql support,
 perl 
 
 optional support for gathering tv schedule via zap2xml.pl script.
